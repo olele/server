@@ -195,7 +195,7 @@ class UiConfService extends KalturaBaseService
 		
 		$count = uiConfPeer::doCount( $templateCriteria );
 		if (!$pager)
-		        $pager = new KalturaFilterPager ();
+		        $pager = new kalturaFilterPager ();
 		$pager->attachToCriteria( $templateCriteria );
 		$list = uiConfPeer::doSelect( $templateCriteria );
 		$newList = KalturaUiConfArray::fromUiConfArray( $list );

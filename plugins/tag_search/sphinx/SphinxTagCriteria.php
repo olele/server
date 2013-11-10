@@ -114,7 +114,7 @@ class SphinxTagCriteria extends SphinxCriteria
 			$fieldName = "tag.$fieldName";
 		}
 	
-		$entryFields = TagPeer::getFieldNames(BasePeer::TYPE_COLNAME);
+		$entryFields = tagPeer::getFieldNames(BasePeer::TYPE_COLNAME);
 	
 		return in_array($fieldName, $entryFields);
 	}

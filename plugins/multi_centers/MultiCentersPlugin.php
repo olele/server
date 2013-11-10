@@ -30,7 +30,7 @@ class MultiCentersPlugin extends KalturaPlugin implements IKalturaServices, IKal
 	public static function getServicesMap()
 	{
 		$map = array(
-			'filesyncImportBatch' => 'FileSyncImportBatchService',
+			'fileSyncImportBatch' => 'FileSyncImportBatchService',
 		);
 		return $map;
 	}

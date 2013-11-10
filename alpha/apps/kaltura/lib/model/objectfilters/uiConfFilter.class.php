@@ -26,8 +26,7 @@ class uiConfFilter extends baseObjectFilter
 			"_gte_updated_at" ,
 			"_lte_updated_at" ,
 			"_in_display_in_search" ,
-			"_eq_creation_mode",
-			"_in_creation_mode" ,
+			"_in_creation_mode" ,		
 			) , NULL );
 
 		$this->allowed_order_fields = array ( "created_at" , "updated_at", "status" , "obj_type")	;

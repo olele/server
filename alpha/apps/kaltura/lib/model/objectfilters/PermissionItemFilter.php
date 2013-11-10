@@ -14,6 +14,8 @@ class PermissionItemFilter extends baseObjectFilter
 				'_in_type',
 				'_eq_partner_id',
 				'_in_partner_id',
+				'_mlikeor_permission_names' ,
+				'_mlikeand_permission_names',
 				'_mlikeor_tags',
 				'_mlikeand_tags',
 				'_gte_created_at',
