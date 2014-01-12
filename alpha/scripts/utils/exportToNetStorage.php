@@ -78,10 +78,8 @@ while ($moreEntries)
 		$lastCreatedAt = $entry->getCreatedAt(null);
 		
     	$keys = array();
-    	foreach (entry::getIsmFileSyncSubTypes() as $ismFileSyncSubType) 
-    	{
-    		$keys[] = $entry->getSyncKey($ismFileSyncSubType);
-    	}
+    	$keys[] = $entry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM);
+    	$keys[] = $entry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISMC);
     	
     	$flavors = assetPeer::retrieveReadyFlavorsByEntryId($entry->getId());
     	foreach($flavors as $flavor)

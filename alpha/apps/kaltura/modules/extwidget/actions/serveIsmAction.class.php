@@ -29,8 +29,7 @@ class serveIsmAction extends sfAction
 			// backward compatiblity - to be removed once ismc is created with pure objectId.ext instead of entryId_flavorId_version.ext
 			if (strlen($objectId) != 10)
 			{
-				$subTypeVersion = substr($objectId, 11);
-				list($subType, $version) = explode("_", $subTypeVersion);
+				$version = substr($objectId, 13);
 				$objectId = substr($objectId, 0, 10);
 			}
 			else
@@ -40,7 +39,7 @@ class serveIsmAction extends sfAction
 			if (is_null($entry))
 				KExternalErrors::dieError(KExternalErrors::ENTRY_NOT_FOUND);
 				
-			$syncKey = $entry->getSyncKey($subType, $version);
+			$syncKey = $entry->getSyncKey($type == "ism" ? entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM : entry::FILE_SYNC_ENTRY_SUB_TYPE_ISMC, $version);
 		}
 		else if ($type == "ismv")
 		{

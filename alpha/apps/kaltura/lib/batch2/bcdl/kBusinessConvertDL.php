@@ -172,20 +172,16 @@ class kBusinessConvertDL
 	
 	private static function createIsmManifestFileSyncLinkFromReplacingEntry($tempEntry, $realEntry)
 	{
-		foreach (entry::getIsmFileSyncSubTypePairs() as $fileSyncSubTypesPair) 
-		{
-			list($fileSyncIsmSubType, $fileSyncIsmcSubType) = $fileSyncSubTypesPair;
-			$tempEntryIsmSyncKey = $tempEntry->getSyncKey($fileSyncIsmSubType);
-			$tempEntryIsmcSyncKey = $tempEntry->getSyncKey($fileSyncIsmcSubType);
+		$tempEntryIsmSyncKey = $tempEntry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM);
+		$tempEntryIsmcSyncKey = $tempEntry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISMC);
 		
-			if(kFileSyncUtils::fileSync_exists($tempEntryIsmSyncKey) && kFileSyncUtils::fileSync_exists($tempEntryIsmcSyncKey))
-			{			
-				$ismVersion = $realEntry->incrementIsmVersion($fileSyncIsmSubType);
-				$realEntryIsmSyncKey = $realEntry->getSyncKey($fileSyncIsmSubType, $ismVersion);
-				kFileSyncUtils::createSyncFileLinkForKey($realEntryIsmSyncKey, $tempEntryIsmSyncKey);	
-				$realEntryIsmcSyncKey = $realEntry->getSyncKey($fileSyncIsmcSubType, $ismVersion);
-				kFileSyncUtils::createSyncFileLinkForKey($realEntryIsmcSyncKey, $tempEntryIsmcSyncKey);
-			}						
+		if(kFileSyncUtils::fileSync_exists($tempEntryIsmSyncKey) && kFileSyncUtils::fileSync_exists($tempEntryIsmcSyncKey))
+		{		
+			$ismVersion = $realEntry->incrementIsmVersion();
+			$realEntryIsmSyncKey = $realEntry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM, $ismVersion);
+			kFileSyncUtils::createSyncFileLinkForKey($realEntryIsmSyncKey, $tempEntryIsmSyncKey);	
+			$realEntryIsmcSyncKey = $realEntry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISMC, $ismVersion);
+			kFileSyncUtils::createSyncFileLinkForKey($realEntryIsmcSyncKey, $tempEntryIsmcSyncKey);
 		}
 	}
 	

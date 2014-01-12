@@ -2,12 +2,10 @@
 /**
  * @package plugins.smoothProtect
  */
-class SmoothProtectPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator, IKalturaEventConsumers, IKalturaPending, IKalturaConvertContributor
+class SmoothProtectPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator, IKalturaPending, IKalturaConvertContributor
 {
 	const PLUGIN_NAME = 'smoothProtect';
 	const PARAMS_STUB = '__params__';
-	
-	const SMOOTH_PROTECT_EVENTS_CONSUMER = 'kSmoothProtectEventsConsumer';
 	
 	public static function getPluginName()
 	{
@@ -95,16 +93,6 @@ class SmoothProtectPlugin extends KalturaPlugin implements IKalturaObjectLoader,
 	public static function getApiValue($valueName)
 	{
 		return self::getPluginName() . IKalturaEnumerator::PLUGIN_VALUE_DELIMITER . $valueName;
-	}
-	
-	/**
-	 * @return array
-	 */
-	public static function getEventConsumers()
-	{
-		return array(
-			self::SMOOTH_PROTECT_EVENTS_CONSUMER,
-		);
 	}
 	
 	public static function contributeToConvertJobData (kConvertJobData $jobData)

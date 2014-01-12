@@ -2,10 +2,9 @@
 /**
  * @package plugins.ismIndex
  */
-class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator, IKalturaEventConsumers
+class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator
 {
 	const PLUGIN_NAME = 'ismIndex';
-	const ISM_INDEX_EVENTS_CONSUMER = 'kIsmIndexEventsConsumer';
 	
 	public static function getPluginName()
 	{
@@ -82,15 +81,5 @@ class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKal
 	public static function getApiValue($valueName)
 	{
 		return self::getPluginName() . IKalturaEnumerator::PLUGIN_VALUE_DELIMITER . $valueName;
-	}
-	
-	/**
-	 * @return array
-	 */
-	public static function getEventConsumers()
-	{
-		return array(
-			self::ISM_INDEX_EVENTS_CONSUMER,
-		);
 	}
 }

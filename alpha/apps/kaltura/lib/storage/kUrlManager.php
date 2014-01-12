@@ -235,7 +235,7 @@ class kUrlManager
 	{
 		$fileSync = kFileSyncUtils::resolve($fileSync);
 		
-		if(in_array($fileSync->getObjectSubType(), entry::getIsmFileSyncSubTypes()))
+		if($fileSync->getObjectSubType() == entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM)
 			return $fileSync->getSmoothStreamUrl();
 		
 		$url = $fileSync->getFilePath();
