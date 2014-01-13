@@ -11,5 +11,5 @@ interface IKalturaConvertContributor extends IKalturaBase
 	 * @param kConvertJobData $jobData
 	 * @returns kConvertJobData
 	 */ 
-	public static function contributeToConvertJobData (kConvertJobData $jobData);
+	public static function contributeToConvertJobData ($enumValue, kConvertJobData $jobData);
 }

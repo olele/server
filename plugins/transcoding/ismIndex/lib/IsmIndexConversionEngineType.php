@@ -6,11 +6,13 @@
 class IsmIndexConversionEngineType implements IKalturaPluginEnum, conversionEngineType
 {
 	const ISMINDEX = 'IsmIndex';
+	const ISM_MANIFEST = 'IsmManifest';
 	
 	public static function getAdditionalValues()
 	{
 		return array(
-			'ISMINDEX' => self::ISMINDEX
+			'ISMINDEX' => self::ISMINDEX,
+			'ISM_MANIFEST' => self::ISM_MANIFEST
 		);
 	}
 	

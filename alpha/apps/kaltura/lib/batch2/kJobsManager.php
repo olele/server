@@ -673,7 +673,7 @@ class kJobsManager
 		if($plugin && $plugin instanceof IKalturaConvertContributor)
 		{
 			KalturaLog::log("Setting additional data by plugin");
-			$convertData = $plugin->contributeToConvertJobData($convertData);
+			$convertData = $plugin->contributeToConvertJobData($conversionEngineId, $convertData);
 		}
 	}
 	

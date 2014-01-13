@@ -95,40 +95,8 @@ class SmoothProtectPlugin extends KalturaPlugin implements IKalturaObjectLoader,
 		return self::getPluginName() . IKalturaEnumerator::PLUGIN_VALUE_DELIMITER . $valueName;
 	}
 	
-	public static function contributeToConvertJobData (kConvertJobData $jobData)
+	public static function contributeToConvertJobData ($enumValue, kConvertJobData $jobData)
 	{
-		$additionalFileSyncs = array();
-		foreach ($jobData->getSrcFileSyncs() as $srcFileSyncDesc) 
-		{
-			$ismDescriptor = self::getFileSyncDescriptor($srcFileSyncDesc, flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
-			$ismcDescriptor = self::getFileSyncDescriptor($srcFileSyncDesc, flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC);
-			if($ismDescriptor && $ismcDescriptor)
-			{
-				$additionalFileSyncs[] = $ismDescriptor;
-				$additionalFileSyncs[] = $ismcDescriptor;
-			}								
-		}
-		
-		$jobData->setSrcFileSyncs(array_merge($jobData->getSrcFileSyncs(), $additionalFileSyncs));
-		return $jobData;
-	}
-	
-	private static function getFileSyncDescriptor(kSourceFileSyncDescriptor $flavorAssetDesc, $objectSubType)
-	{
-		$ismDescriptor = null;
-		$flavorAsset = assetPeer::retrieveById($flavorAssetDesc->getAssetId());
-		$key = $flavorAsset->getSyncKey($objectSubType);			
-		list($fileSync, $local) = kFileSyncUtils::getReadyFileSyncForKey($key);
-		if($fileSync)
-		{
-			$ismDescriptor = new kSourceFileSyncDescriptor();
-			$ismDescriptor->setFileSyncLocalPath($fileSync->getFullPath());							
-			$ismDescriptor->setFileSyncRemoteUrl($fileSync->getExternalUrl($flavorAsset->getEntryId()));
-			$ismDescriptor->setAssetId($key->getObjectId());
-			$ismDescriptor->setAssetParamsId($flavorAssetDesc->getAssetParamsId());
-			$ismDescriptor->setFileSyncObjectSubType($key->getObjectSubType());
-		}
-
-		return $ismDescriptor;
+		return IsmIndexPlugin::addIsmManifestsToSrcFileSyncDesc($jobData);
 	}
 }
