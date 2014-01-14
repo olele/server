@@ -6,6 +6,7 @@ class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKal
 {
 	const PLUGIN_NAME = 'ismIndex';
 	const ISM_INDEX_EVENTS_CONSUMER = 'kIsmIndexEventsConsumer';
+	const ISM_MANIFEST_TAG = 'ism_manifest';
 	
 	public static function getPluginName()
 	{

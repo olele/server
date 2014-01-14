@@ -1,60 +1,44 @@
 <?php
-class kIsmIndexEventsConsumer implements kBatchJobStatusEventConsumer
+class kIsmIndexEventsConsumer implements kObjectChangedEventConsumer
 {	
-
 	/* (non-PHPdoc)
-	 * @see kBatchJobStatusEventConsumer::shouldConsumeJobStatusEvent()
+	 * @see kObjectChangedEventConsumer::shouldConsumeChangedEvent()
 	 */
-	public function shouldConsumeJobStatusEvent(BatchJob $dbBatchJob)
+	public function shouldConsumeChangedEvent(BaseObject $object, array $modifiedColumns)
 	{
-		if(	$dbBatchJob->getStatus() == BatchJob::BATCHJOB_STATUS_FINISHED
-			&& $dbBatchJob->getJobType() == BatchJobType::CONVERT
-			&& $dbBatchJob->getJobSubType() == IsmIndexPlugin::getConversionEngineCoreValue(IsmIndexConversionEngineType::ISM_MANIFEST)
+		if(
+			$object instanceof flavorAsset
+			&&	in_array(assetPeer::STATUS, $modifiedColumns)
+			&&  ($object->getStatus() == flavorAsset::ASSET_STATUS_READY)
+			&&  $object->hasTag(IsmIndexPlugin::ISM_MANIFEST_TAG)
+			&&  !$object->getentry()->getStatus() == entryStatus::DELETED
+			&& 	!$object->getentry()->getReplacingEntryId()
 		)
 			return true;
-		else	
-			return false;
+			
+		return false;
 	}
 
 	/* (non-PHPdoc)
-	 * @see kBatchJobStatusEventConsumer::updatedJob()
+	 * @see kObjectChangedEventConsumer::objectChanged()
 	 */
-	public function updatedJob(BatchJob $dbBatchJob)
-	{ 
+	public function objectChanged(BaseObject $object, array $modifiedColumns)
+	{	
 		// replacing the ismc file name in the ism file
-		$ismcOldName = null;
-
-		$fileSyncDescriptors = $dbBatchJob->getData()->getExtraDestFileSyncs();		
-		foreach ($fileSyncDescriptors as $fileSyncDescriptor) 
-		{
-			if($fileSyncDescriptor->getFileSyncObjectSubType() == flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC)
-			{
-				$ismcOldName = basename($fileSyncDescriptor->getFileSyncLocalPath());
-				break;
-			}
-		}		
-		$flavorAsset = assetPeer::retrieveById($dbBatchJob->getFlavorAssetId());
-		if($flavorAsset && $ismcOldName)
-		{		
-			$ismFileSyncKey = $flavorAsset->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
-			$ismcFileSyncKey = $flavorAsset->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC);
+		$ismFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
+		$ismcFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC);
 			
-			$ismcNewName = basename(kFileSyncUtils::getLocalFilePathForKey($ismcFileSyncKey));
-			KalturaLog::debug("Editing ISM [$ismcOldName] to [$ismcNewName]");
+		$ismcNewName = basename(kFileSyncUtils::getLocalFilePathForKey($ismcFileSyncKey));
+		KalturaLog::debug("Editing ISM set content to [$ismcNewName]");
 			
-			$ismPath = kFileSyncUtils::getLocalFilePathForKey($ismFileSyncKey);
-			$ismContent = file_get_contents($ismPath);
-			$ismContent = str_replace("content=\"$ismcOldName\"", "content=\"$ismcNewName\"", $ismContent);
-	
-			$bytesWritten = file_put_contents($ismPath, $ismContent);
-			if(!$bytesWritten)
-				KalturaLog::err("Failed to update file [$ismPath]");
-		}
-		else
-		{
-			KalturaLog::err("Failed to replace ismc old path in ism manifest");
-		}
+		$ismPath = kFileSyncUtils::getLocalFilePathForKey($ismFileSyncKey);
+		$ismXml = new SimpleXMLElement(file_get_contents($ismPath));
+		$ismXml->head->meta['content'] = $ismcNewName;
 			
+		$bytesWritten = file_put_contents($ismPath, $ismXml->asXML());
+		if(!$bytesWritten)
+			KalturaLog::err("Failed to update file [$ismPath]");
+					
 		return true;
 	}
 
