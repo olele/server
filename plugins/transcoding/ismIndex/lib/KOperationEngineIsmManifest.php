@@ -24,25 +24,28 @@ class KOperationEngineIsmManifest extends KSingleOutputOperationEngine
 		
 		if(!$this->data->srcFileSyncs)
 			return true;
-			
+		
+		$ismFilePath = $this->outFilePath.".ism";
+		$ismcFilePath = $this->outFilePath.".ismc";
+		
 		$ismcStr = $this->mergeIsmcManifests($this->data->srcFileSyncs);
-		file_put_contents("$this->outFilePath.ismc", $ismcStr);
+		file_put_contents($ismcFilePath, $ismcStr);
 		
-		$ismStr = $this->mergeIsmManifests($this->data->srcFileSyncs, "$this->outFilePath.ismc");
-		file_put_contents("$this->outFilePath.ism", $ismStr);
+		$ismStr = $this->mergeIsmManifests($this->data->srcFileSyncs, $ismcFilePath);
+		file_put_contents($ismFilePath, $ismStr);
 		
-		$fsDescArr = array();
-		$fsDesc = new KalturaDestFileSyncDescriptor();
-		$fsDesc->fileSyncLocalPath = "$this->outFilePath.ism";
-		$fsDesc->fileSyncObjectSubType = 3; //".ism";
-		$fsDescArr[] = $fsDesc;
+		$destFileSyncDescArr = array();
+		$fileSyncDesc = new KalturaDestFileSyncDescriptor();
+		$fileSyncDesc->fileSyncLocalPath = $ismFilePath;
+		$fileSyncDesc->fileSyncObjectSubType = 3; //".ism";
+		$destFileSyncDescArr[] = $fileSyncDesc;
 		
-		$fsDesc = new KalturaDestFileSyncDescriptor();
-		$fsDesc->fileSyncLocalPath = "$this->outFilePath.ismc";
-		$fsDesc->fileSyncObjectSubType = 4; //".ismc";
-		$fsDescArr[] = $fsDesc;
+		$fileSyncDesc = new KalturaDestFileSyncDescriptor();
+		$fileSyncDesc->fileSyncLocalPath = $ismcFilePath;
+		$fileSyncDesc->fileSyncObjectSubType = 4; //".ismc";
+		$destFileSyncDescArr[] = $fileSyncDesc;
 		
-		$this->data->extraDestFileSyncs  = $fsDescArr;
+		$this->data->extraDestFileSyncs  = $destFileSyncDescArr;
 
 		$this->data->destFileSyncLocalPath = null;
 		$this->outFilePath = null;
@@ -64,10 +67,10 @@ class KOperationEngineIsmManifest extends KSingleOutputOperationEngine
 				$pair = array();
 			if($srcFileSync->fileSyncObjectSubType == 3) //ism file
 				$pair[0] = $srcFileSync->fileSyncLocalPath;
-			else if($srcFileSync->fileSyncObjectSubType != 4 ) //ismv file
+			else if($srcFileSync->fileSyncObjectSubType == 1 ) //ismv file
 				$pair[1] = $srcFileSync->fileSyncLocalPath;
 				
-			$filePathMap[$srcFileSync->assetId] = pair;
+			$filePathMap[$srcFileSync->assetId] = $pair;
 		}
 		
 		foreach ($filePathMap as $filePathPair) 
@@ -90,8 +93,13 @@ class KOperationEngineIsmManifest extends KSingleOutputOperationEngine
   				}				
 			}
 		} 		
- 		$root->head->meta['content'] = basename($targetIsmcPath);
- 		return $root->asXML();
+		if($root)
+		{
+	 		$root->head->meta['content'] = basename($targetIsmcPath);
+	 		return $root->asXML();
+		}
+		else
+			return null;
 	}
 	
 	private function mergeIsmcManifests(array $srcFileSyncs)
@@ -114,8 +122,11 @@ class KOperationEngineIsmManifest extends KSingleOutputOperationEngine
 	  				}
 				} 				
 			}
-		} 		
- 		return $root->asXML(); 		
+		} 
+		if($root)		
+ 			return $root->asXML(); 		
+ 		else
+ 			return null;
 	}
 
 	private function addQualityLevel(SimpleXMLElement $dest, SimpleXMLElement $source)

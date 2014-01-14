@@ -2,7 +2,7 @@
 /**
  * @package plugins.ismIndex
  */
-class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator, IKalturaEventConsumers
+class IsmIndexPlugin extends KalturaPlugin implements IKalturaObjectLoader, IKalturaEnumerator, IKalturaEventConsumers, IKalturaConvertContributor
 {
 	const PLUGIN_NAME = 'ismIndex';
 	const ISM_INDEX_EVENTS_CONSUMER = 'kIsmIndexEventsConsumer';
