@@ -620,7 +620,6 @@ class kFlowHelper
 	
 	private static function handleOperatorsProcessingFinished(flavorAsset $flavorAsset, flavorParamsOutput $flavorParamsOutput, entry $entry, BatchJob $dbBatchJob, kConvertJobData $data, $rootBatchJob = null)
 	{
-		KalturaLog::debug("in handleOperatorsProcessingFinished");
 		$offset = $entry->getThumbOffset(); // entry getThumbOffset now takes the partner DefThumbOffset into consideration
 
 		$createThumb = $entry->getCreateThumb();
@@ -628,6 +627,12 @@ class kFlowHelper
 
 		if($entry->getType() != entryType::MEDIA_CLIP) // e.g. document
 			$extractMedia = false;
+		
+		if(!kFileSyncUtils::fileSync_exists($flavorAsset->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ASSET)))
+		{
+			$extractMedia = false;
+			$createThumb = false;
+		}
 		
 		if($extractMedia && $rootBatchJob && $rootBatchJob->getJobType() == BatchJobType::CONVERT_PROFILE)
 		{
@@ -653,7 +658,6 @@ class kFlowHelper
 
 		if($createThumb || $extractMedia)
 		{
-			KalturaLog::debug("before addPostConvertJob");
 			$postConvertAssetType = BatchJob::POSTCONVERT_ASSET_TYPE_FLAVOR;
 			if($flavorAsset->getIsOriginal())
 				$postConvertAssetType = BatchJob::POSTCONVERT_ASSET_TYPE_SOURCE;
@@ -662,7 +666,6 @@ class kFlowHelper
 		}
 		else // no need to run post convert
 		{
-			KalturaLog::debug("before handleFlavorReady");
 			$flavorAsset = kBusinessPostConvertDL::handleFlavorReady($dbBatchJob, $data->getFlavorAssetId());
 			if($flavorAsset)
 			{
@@ -1507,7 +1510,6 @@ class kFlowHelper
 				$syncKey = $currentFlavorAsset->getSyncKey(flavorAsset::FILE_SYNC_FLAVOR_ASSET_SUB_TYPE_ASSET);
 				if(kFileSyncUtils::fileSync_exists($syncKey))
 				{
-					KalturaLog::debug("Start conversion");
 					$path = kFileSyncUtils::getLocalFilePathForKey($syncKey);
 
 					$entry = $dbBatchJob->getEntry();
