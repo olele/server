@@ -9,7 +9,7 @@ class kIsmIndexEventsConsumer implements kBatchJobStatusEventConsumer
 	{
 		if(	$dbBatchJob->getStatus() == BatchJob::BATCHJOB_STATUS_FINISHED
 			&& $dbBatchJob->getJobType() == BatchJobType::CONVERT
-			&& $dbBatchJob->getJobSubType() == IsmIndexPlugin::getApiValue(IsmIndexConversionEngineType::ISM_MANIFEST)
+			&& $dbBatchJob->getJobSubType() == IsmIndexPlugin::getConversionEngineCoreValue(IsmIndexConversionEngineType::ISM_MANIFEST)
 		)
 			return true;
 		else	
