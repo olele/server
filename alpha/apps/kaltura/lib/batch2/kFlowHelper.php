@@ -552,7 +552,6 @@ class kFlowHelper
 		KalturaLog::debug("Convert finished with destination file: " . $data->getDestFileSyncLocalPath());
 
 		$syncKey = $flavorAsset->getSyncKey(flavorAsset::FILE_SYNC_FLAVOR_ASSET_SUB_TYPE_ASSET);
-
 		
 		$storageProfileId = $flavorParamsOutput->getSourceRemoteStorageProfileId();
 		if($storageProfileId == StorageProfile::STORAGE_KALTURA_DC)
@@ -740,6 +739,12 @@ class kFlowHelper
 	private static function handleAdditionalFilesConvertFinished(flavorAsset $flavorAsset, BatchJob $dbBatchJob, kConvertJobData $data)
 	{
 		KalturaLog::debug("Convert finished, creating additional file syncs ");
+		
+		if(!$flavorAsset->getVersion())
+		{
+			$flavorAsset->incrementVersion();
+			$flavorAsset->save();
+		}
 		
 		foreach ($data->getExtraDestFileSyncs() as $destFileSyncDesc) 
 		{
