@@ -399,9 +399,24 @@ class playManifestAction extends kalturaAction
 		return false;
 	}
 	
-	protected function initSilverLightManifest()
+	protected function initSilverLightManifest($flavorAssets)
 	{
-		$key = $this->entry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM);
+		$key = null;
+		if($flavorAssets)
+		{
+			foreach ($flavorAssets as $flavorAsset) 
+			{
+				if($flavorAsset->hasTag('ism_manifest'))
+				{
+					$key = $flavorAsset->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
+					break;
+				}
+			}
+		}
+		
+		if(!$key)
+			$key = $this->entry->getSyncKey(entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM);
+			
 		$localFileSync = kFileSyncUtils::getReadyInternalFileSyncForKey($key);
 		$remoteFileSync = kFileSyncUtils::getReadyExternalFileSyncForKey($key);
 		if ($this->shouldUseLocalFlavors($localFileSync, $remoteFileSync))
@@ -483,26 +498,10 @@ class playManifestAction extends kalturaAction
 	
 	protected function initFlavorAssetArray()
 	{
-		// check whether the flavor asset list is needed
-		if ($this->entry->getType() == entryType::LIVE_STREAM)
-			return;			// live stream entries don't have flavors
-		
 		$oneOnly = false;
-		switch($this->format)
-		{
-			case PlaybackProtocol::HTTP:
-			case "url":
-			case "rtsp":
-				$oneOnly = true;	// single flavor delivery formats
-				break;
-				
-			case PlaybackProtocol::SILVER_LIGHT:
-				$this->initSilverLightManifest();
-				// no break here
-			case "hdnetwork":
-				return;				// manifest-based delivery formats
-		}
-				
+		if($this->format == PlaybackProtocol::HTTP || $this->format == "url" || $this->format == "rtsp")
+			$oneOnly = true;
+						
 		// get initial flavor list by input
 		$flavorAssets = array();
 		if ($this->flavorIds)
@@ -518,7 +517,10 @@ class playManifestAction extends kalturaAction
 			$flavorAssets = $this->removeNotAllowedFlavors($flavorAssets);
 			$flavorAssets = $this->removeMaxBitrateFlavors($flavorAssets);
 		}		
-					
+
+		if($this->format == PlaybackProtocol::SILVER_LIGHT)
+			return $this->initSilverLightManifest($flavorAssets);
+		
 		// get flavors availability
 		$servePriority = $this->entry->getPartner()->getStorageServePriority();
 		
@@ -616,7 +618,7 @@ class playManifestAction extends kalturaAction
 			$this->flavorAssets = $remoteFlavors;
 			$this->remoteFileSyncs = $remoteFileSyncs[$maxDc];
 		}
-	
+					
 		if (!$this->flavorAssets)
 			KExternalErrors::dieError(KExternalErrors::FLAVOR_NOT_FOUND);
 	
@@ -1282,8 +1284,13 @@ class playManifestAction extends kalturaAction
 		$playbackCdnHost = $this->entry->getPartner()->getPlaybackCdnHost();
 		if($playbackCdnHost)
 			$this->cdnHost = preg_replace('/^https?/', $this->protocol, $playbackCdnHost);
-				
-		$this->initFlavorAssetArray();
+
+		// check whether the flavor asset list is needed
+		if ($this->entry->getType() != entryType::LIVE_STREAM && $this->format != "hdnetwork")
+		{
+			$this->initFlavorAssetArray();
+		}
+		
 		$this->initEntryDuration();
 		
 		if ($this->duration && $this->duration < 10 && $this->format == PlaybackProtocol::AKAMAI_HDS)

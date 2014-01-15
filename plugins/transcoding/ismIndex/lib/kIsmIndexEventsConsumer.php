@@ -9,10 +9,10 @@ class kIsmIndexEventsConsumer implements kObjectChangedEventConsumer
 		if(
 			$object instanceof flavorAsset
 			&&	in_array(assetPeer::STATUS, $modifiedColumns)
-			&&  ($object->getStatus() == flavorAsset::ASSET_STATUS_READY)
+			&&  $object->isLocalReadyStatus()
 			&&  $object->hasTag(IsmIndexPlugin::ISM_MANIFEST_TAG)
-			&&  !$object->getentry()->getStatus() == entryStatus::DELETED
-			&& 	!$object->getentry()->getReplacingEntryId()
+			&&  $object->getentry()->getStatus() != entryStatus::DELETED
+			&& 	!($object->getentry()->getReplacingEntryId())
 		)
 			return true;
 			
@@ -25,19 +25,29 @@ class kIsmIndexEventsConsumer implements kObjectChangedEventConsumer
 	public function objectChanged(BaseObject $object, array $modifiedColumns)
 	{	
 		// replacing the ismc file name in the ism file
-		$ismFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
+		$ismPrevVersionFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM);
+		$ismContents = kFileSyncUtils::file_get_contents($ismPrevVersionFileSyncKey);
+		
+		$ismcPrevVersionFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC);
+		$ismcContents = kFileSyncUtils::file_get_contents($ismcPrevVersionFileSyncKey);
+		$ismcPrevVersionFilePath = kFileSyncUtils::getLocalFilePathForKey($ismcPrevVersionFileSyncKey);
+		
+		$object->incrementVersion();
+		$object->save();
+		
 		$ismcFileSyncKey = $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISMC);
-			
+		kFileSyncUtils::moveFromFile($ismcPrevVersionFilePath, $ismcFileSyncKey);			
 		$ismcNewName = basename(kFileSyncUtils::getLocalFilePathForKey($ismcFileSyncKey));
+		
 		KalturaLog::debug("Editing ISM set content to [$ismcNewName]");
 			
-		$ismPath = kFileSyncUtils::getLocalFilePathForKey($ismFileSyncKey);
-		$ismXml = new SimpleXMLElement(file_get_contents($ismPath));
+		$ismXml = new SimpleXMLElement($ismContents);
 		$ismXml->head->meta['content'] = $ismcNewName;
-			
-		$bytesWritten = file_put_contents($ismPath, $ismXml->asXML());
-		if(!$bytesWritten)
-			KalturaLog::err("Failed to update file [$ismPath]");
+		
+		$tmpPath = kFileSyncUtils::getLocalFilePathForKey($ismPrevVersionFileSyncKey).'.tmp';
+		file_put_contents($tmpPath, $ismXml->asXML());
+		
+		kFileSyncUtils::moveFromFile($tmpPath, $object->getSyncKey(flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM));
 					
 		return true;
 	}
