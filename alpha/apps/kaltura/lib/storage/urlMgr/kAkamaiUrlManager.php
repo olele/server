@@ -227,6 +227,9 @@ class kAkamaiUrlManager extends kUrlManager
 		if($fileSync->getObjectSubType() != entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM)
 			return parent::doGetFileSyncUrl($fileSync);
 
+		if($fileSync->getObjectType() == FileSyncObjectType::FLAVOR_ASSET && $fileSync->getObjectSubType() != flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM)
+			return parent::doGetFileSyncUrl($fileSync);
+			
 		$serverUrl = myPartnerUtils::getIisHost($fileSync->getPartnerId(), "http");	
 		
 		$path = $partnerPath.'/serveIsm/objectId/' . $fileSync->getObjectId() . '_' . $fileSync->getObjectSubType() . '_' . $fileSync->getVersion() . '.' . pathinfo(kFileSyncUtils::resolve($fileSync)->getFilePath(), PATHINFO_EXTENSION) . '/manifest';

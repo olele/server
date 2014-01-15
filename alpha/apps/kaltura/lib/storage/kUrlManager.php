@@ -238,6 +238,9 @@ class kUrlManager
 		if($fileSync->getObjectSubType() == entry::FILE_SYNC_ENTRY_SUB_TYPE_ISM)
 			return $fileSync->getSmoothStreamUrl();
 		
+		if($fileSync->getObjectType() == FileSyncObjectType::FLAVOR_ASSET && $fileSync->getObjectSubType() == flavorAsset::FILE_SYNC_ASSET_SUB_TYPE_ISM)
+			return $fileSync->getSmoothStreamUrl();
+			
 		$url = $fileSync->getFilePath();
 		$url = str_replace('\\', '/', $url);
 	
